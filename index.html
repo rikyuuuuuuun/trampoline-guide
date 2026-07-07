@@ -1,573 +1,479 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>グランドフェス 点数シミュレーター</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --ink: #f8fafc;
-      --muted: #9aa4b2;
-      --panel: rgba(20, 22, 28, 0.88);
-      --panel-strong: rgba(30, 34, 42, 0.96);
-      --line: rgba(255, 255, 255, 0.11);
-      --teal: #31d0aa;
-      --amber: #f4c15d;
-      --coral: #ff6b6b;
-      --violet: #9b8cff;
-      --shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>グランドフェス 点数シミュレーター</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0e1a;
+    --panel: #10162a;
+    --panel-alt: #161d35;
+    --panel-raised: #1c2440;
+    --gold: #ffc93c;
+    --gold-dim: #b8912a;
+    --coral: #ff5470;
+    --teal: #3ddc97;
+    --ink: #f5f7fa;
+    --muted: #7c87a3;
+    --line: rgba(255,255,255,0.09);
+    --radius: 14px;
+  }
+  *{ box-sizing: border-box; }
+  html{ -webkit-tap-highlight-color: transparent; }
+  body{
+    margin:0;
+    padding: 28px 16px 60px;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(255,201,60,0.08), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(61,220,151,0.07), transparent 40%),
+      var(--bg);
+    color: var(--ink);
+    font-family: 'Zen Kaku Gothic New', 'Hiragino Sans', sans-serif;
+    min-height: 100vh;
+  }
+  .wrap{ max-width: 560px; margin: 0 auto; }
 
-    * {
-      box-sizing: border-box;
-    }
+  /* ---------- Header ---------- */
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    font-family:'Oswald', sans-serif;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .eyebrow::before, .eyebrow::after{
+    content:'';
+    width: 28px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim));
+  }
+  .eyebrow::after{ background: linear-gradient(90deg, var(--gold-dim), transparent); }
+  h1{
+    text-align:center;
+    font-size: 26px;
+    font-weight: 900;
+    margin: 0 0 4px;
+    letter-spacing: 0.5px;
+  }
+  .subtitle{
+    text-align:center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 26px;
+    letter-spacing: 0.5px;
+  }
 
-    body {
-      min-height: 100vh;
-      margin: 0;
-      font-family: "Helvetica Neue", "Yu Gothic", "Hiragino Kaku Gothic ProN", Arial, sans-serif;
-      background:
-        radial-gradient(circle at 15% 12%, rgba(49, 208, 170, 0.22), transparent 34%),
-        radial-gradient(circle at 90% 18%, rgba(244, 193, 93, 0.18), transparent 32%),
-        linear-gradient(145deg, #111318 0%, #191818 48%, #12151a 100%);
-      color: var(--ink);
-      padding: 24px;
-    }
+  /* ---------- Scoreboard ---------- */
+  .board{
+    position: relative;
+    background: linear-gradient(180deg, var(--panel-raised), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 26px 20px 20px;
+    margin-bottom: 26px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .board::before{
+    content:'';
+    position:absolute;
+    top:-40%; left:-10%;
+    width: 60%; height: 180%;
+    background: radial-gradient(ellipse at center, rgba(255,201,60,0.08), transparent 70%);
+    pointer-events:none;
+  }
+  .board-label{
+    text-align:center;
+    font-family:'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .score-display{
+    text-align:center;
+    line-height: 1;
+    margin: 10px 0 20px;
+    position: relative;
+  }
+  .score-display .num{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 68px;
+    font-weight: 700;
+    color: var(--gold);
+    text-shadow: 0 0 18px rgba(255,201,60,0.45), 0 0 2px rgba(255,201,60,0.8);
+    letter-spacing: 1px;
+    transition: transform 0.18s ease;
+    display: inline-block;
+  }
+  .score-display .num.bump{ transform: scale(1.06); }
+  .score-display .unit{
+    font-family:'Oswald', sans-serif;
+    font-size: 16px;
+    color: var(--muted);
+    margin-left: 6px;
+    letter-spacing: 1px;
+  }
 
-    .app {
-      width: min(1080px, 100%);
-      min-height: calc(100vh - 48px);
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1.1fr);
-      gap: 18px;
-      align-items: stretch;
-    }
+  .ticket{
+    background: rgba(0,0,0,0.22);
+    border-radius: 12px;
+    padding: 4px 16px;
+    position: relative;
+  }
+  .trow{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 13px;
+  }
+  .trow:last-child{ border-bottom:none; }
+  .trow .label{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    color: #cbd2e3;
+    font-weight: 500;
+  }
+  .trow .label .icon{ font-size: 15px; }
+  .trow .val{
+    font-family:'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .trow.subtotal{
+    background: rgba(255,201,60,0.07);
+    margin: 4px -16px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border-bottom: none;
+  }
+  .trow.subtotal .label{ color: var(--gold); font-weight:700; }
+  .trow.subtotal .val{
+    font-size: 12px;
+    color: var(--gold);
+    background: rgba(0,0,0,0.3);
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
 
-    .hero,
-    .controls {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(22px);
-    }
+  .status-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .status-chip.combo{
+    background: linear-gradient(90deg, var(--coral), #ff8a5c);
+    color: #fff;
+    box-shadow: 0 0 0 0 rgba(255,84,112,0.5);
+    animation: ring 1.8s infinite;
+  }
+  .status-chip.single{
+    background: rgba(124,135,163,0.18);
+    color: var(--muted);
+  }
+  .status-chip.empty{
+    color: var(--muted);
+    font-weight: 500;
+  }
+  @keyframes ring{
+    0%{ box-shadow: 0 0 0 0 rgba(255,84,112,0.45); }
+    70%{ box-shadow: 0 0 0 8px rgba(255,84,112,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(255,84,112,0); }
+  }
 
-    .hero {
-      position: sticky;
-      top: 24px;
-      min-height: calc(100vh - 48px);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-      border-radius: 8px;
-      padding: 28px;
-    }
+  /* ---------- Sections ---------- */
+  .section-title{
+    display:flex;
+    align-items:baseline;
+    gap: 10px;
+    font-family:'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--ink);
+    margin: 30px 4px 14px;
+  }
+  .section-title .step{
+    width: 22px; height:22px;
+    border-radius: 6px;
+    background: var(--panel-alt);
+    border: 1px solid var(--line);
+    color: var(--teal);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 12px;
+    font-weight: 700;
+  }
 
-    .hero::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(120deg, rgba(255,255,255,0.13), transparent 30%),
-        repeating-linear-gradient(135deg, transparent 0 16px, rgba(255,255,255,0.035) 17px 18px);
-      pointer-events: none;
-    }
+  .skill-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .field{
+    margin-bottom: 12px;
+  }
+  .field label{
+    display:block;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+  }
+  .select-wrap{
+    position: relative;
+  }
+  .select-wrap::after{
+    content:'▾';
+    position:absolute;
+    right: 12px; top:50%;
+    transform: translateY(-50%);
+    color: var(--gold);
+    font-size: 11px;
+    pointer-events:none;
+  }
+  select{
+    width:100%;
+    appearance:none;
+    -webkit-appearance:none;
+    background: var(--panel-alt);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 11px 30px 11px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor:pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  select:hover{ border-color: rgba(255,201,60,0.4); }
+  select:focus-visible{
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(255,201,60,0.2);
+  }
 
-    .hero > * {
-      position: relative;
-      z-index: 1;
-    }
+  .hint{
+    display:flex;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(61,220,151,0.09), rgba(61,220,151,0.03));
+    border: 1px solid rgba(61,220,151,0.25);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 26px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #cfe9dd;
+  }
+  .hint .icon{ font-size: 18px; flex-shrink:0; }
+  .hint strong{ color: var(--teal); }
 
-    .kicker {
-      display: inline-flex;
-      width: fit-content;
-      align-items: center;
-      gap: 8px;
-      color: var(--teal);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .kicker::before {
-      content: "";
-      width: 28px;
-      height: 2px;
-      background: var(--teal);
-    }
-
-    h1 {
-      margin: 14px 0 12px;
-      font-size: clamp(34px, 5vw, 68px);
-      line-height: 0.95;
-      letter-spacing: 0;
-    }
-
-    .lead {
-      max-width: 440px;
-      margin: 0;
-      color: #c6ccd5;
-      font-size: 15px;
-      line-height: 1.8;
-    }
-
-    .score-stage {
-      margin-top: 34px;
-    }
-
-    .score-label {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .score {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-      margin-top: 8px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    #total-score {
-      font-size: clamp(72px, 12vw, 148px);
-      font-weight: 900;
-      line-height: 0.86;
-      color: var(--ink);
-      text-shadow: 0 0 42px rgba(49, 208, 170, 0.35);
-    }
-
-    .score-unit {
-      color: var(--amber);
-      font-size: 24px;
-      font-weight: 900;
-    }
-
-    .status-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 22px;
-    }
-
-    .badge {
-      display: inline-flex;
-      min-height: 34px;
-      align-items: center;
-      border-radius: 999px;
-      padding: 7px 13px;
-      font-size: 12px;
-      font-weight: 900;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-    }
-
-    .badge-combo {
-      background: rgba(255, 107, 107, 0.18);
-      color: #ffd2d2;
-      box-shadow: 0 0 26px rgba(255, 107, 107, 0.22);
-    }
-
-    .badge-single {
-      background: rgba(155, 140, 255, 0.16);
-      color: #dad5ff;
-    }
-
-    .badge-empty {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--muted);
-    }
-
-    .breakdown {
-      display: grid;
-      gap: 10px;
-      margin-top: 26px;
-    }
-
-    .breakdown-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      min-height: 44px;
-      border-bottom: 1px solid var(--line);
-      color: #d8dde5;
-      font-size: 13px;
-    }
-
-    .breakdown-row:last-child {
-      border-bottom: 0;
-    }
-
-    .breakdown-row strong {
-      display: block;
-      color: var(--ink);
-      font-size: 14px;
-    }
-
-    .value {
-      min-width: 76px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      padding: 8px 10px;
-      text-align: right;
-      color: var(--amber);
-      font-family: "SFMono-Regular", Consolas, monospace;
-      font-weight: 900;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .controls {
-      border-radius: 8px;
-      padding: 22px;
-    }
-
-    .section {
-      padding: 20px 0;
-      border-top: 1px solid var(--line);
-    }
-
-    .section:first-child {
-      padding-top: 0;
-      border-top: 0;
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    h2 {
-      margin: 0;
-      font-size: 16px;
-      letter-spacing: 0;
-    }
-
-    .section-chip {
-      flex: 0 0 auto;
-      border-radius: 999px;
-      background: rgba(49, 208, 170, 0.12);
-      color: #a8f5e3;
-      padding: 6px 10px;
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .field {
-      display: grid;
-      gap: 7px;
-    }
-
-    label {
-      color: #d4d9e1;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    select {
-      width: 100%;
-      min-height: 46px;
-      border: 1px solid rgba(255, 255, 255, 0.13);
-      border-radius: 6px;
-      background: var(--panel-strong);
-      color: var(--ink);
-      padding: 0 38px 0 12px;
-      font: inherit;
-      font-size: 14px;
-      outline: none;
-      appearance: none;
-      background-image:
-        linear-gradient(45deg, transparent 50%, var(--teal) 50%),
-        linear-gradient(135deg, var(--teal) 50%, transparent 50%);
-      background-position:
-        calc(100% - 18px) 20px,
-        calc(100% - 12px) 20px;
-      background-size: 6px 6px, 6px 6px;
-      background-repeat: no-repeat;
-      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
-    }
-
-    select:hover,
-    select:focus {
-      border-color: rgba(49, 208, 170, 0.72);
-      box-shadow: 0 0 0 4px rgba(49, 208, 170, 0.1);
-    }
-
-    select:active {
-      transform: translateY(1px);
-    }
-
-    .strategy {
-      display: grid;
-      gap: 10px;
-      margin-top: 2px;
-      border-radius: 8px;
-      background:
-        linear-gradient(135deg, rgba(49, 208, 170, 0.12), rgba(244, 193, 93, 0.1)),
-        rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--line);
-      padding: 14px;
-      color: #d9e0e8;
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    .strategy strong {
-      color: var(--amber);
-    }
-
-    .meter {
-      width: 100%;
-      height: 10px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .meter-fill {
-      width: 0%;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--teal), var(--amber), var(--coral));
-      transition: width 220ms ease;
-    }
-
-    @media (max-width: 840px) {
-      body {
-        padding: 14px;
-      }
-
-      .app {
-        min-height: auto;
-        grid-template-columns: 1fr;
-      }
-
-      .hero {
-        position: relative;
-        top: 0;
-        min-height: auto;
-      }
-    }
-
-    @media (max-width: 560px) {
-      body {
-        padding: 10px;
-      }
-
-      .hero,
-      .controls {
-        padding: 18px;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .breakdown-row {
-        grid-template-columns: 1fr;
-      }
-
-      .value {
-        width: 100%;
-        text-align: left;
-      }
-    }
-  </style>
+  @media (max-width: 380px){
+    .score-display .num{ font-size: 54px; }
+    .skill-grid{ grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
-  <main class="app">
-    <section class="hero" aria-label="スコア表示">
-      <div>
-        <div class="kicker">Grand Fes Score</div>
-        <h1>点数シミュレーター</h1>
-        <p class="lead">技、ひねり、着地、出来栄えを選ぶだけで、合計点とコンボ倍率をその場で確認できます。</p>
 
-        <div class="score-stage">
-          <div class="score-label">想定合計得点</div>
-          <div class="score">
-            <span id="total-score">0</span>
-            <span class="score-unit">点</span>
-          </div>
-          <div class="meter" aria-hidden="true">
-            <div class="meter-fill" id="score-meter"></div>
-          </div>
-          <div class="status-row" id="combo-status"></div>
-        </div>
+<div class="wrap">
+  <div class="eyebrow">GRAND FES SCORING</div>
+  <h1>点数シミュレーター</h1>
+  <div class="subtitle">技の組み合わせを選んで、最高のスコアを狙おう</div>
+
+  <div class="board">
+    <div class="board-label">想定合計得点</div>
+    <div class="score-display">
+      <span class="num" id="total-score">0</span><span class="unit">点</span>
+    </div>
+
+    <div class="ticket">
+      <div class="trow">
+        <div class="label"><span class="icon">🤸</span>技の基本点合計</div>
+        <div class="val" id="text-base">0 点</div>
       </div>
-
-      <div class="breakdown" aria-label="計算内訳">
-        <div class="breakdown-row">
-          <div><strong>技の基本点</strong>選択した技の合計</div>
-          <div class="value" id="text-base">0 点</div>
-        </div>
-        <div class="breakdown-row">
-          <div><strong>ひねり加点</strong>難度に応じた追加点</div>
-          <div class="value" id="text-twist">0 点</div>
-        </div>
-        <div class="breakdown-row">
-          <div><strong>ボーナス計算</strong>基本点とひねりに倍率を適用</div>
-          <div class="value" id="text-subtotal">0 点</div>
-        </div>
-        <div class="breakdown-row">
-          <div><strong>着地</strong>着地の安定度</div>
-          <div class="value" id="text-landing">0 点</div>
-        </div>
-        <div class="breakdown-row">
-          <div><strong>出来栄え</strong>姿勢や美しさの評価</div>
-          <div class="value" id="text-execution">0 点</div>
-        </div>
+      <div class="trow">
+        <div class="label"><span class="icon">🌀</span>ひねりの点数</div>
+        <div class="val" id="text-twist">0 点</div>
       </div>
-    </section>
-
-    <section class="controls" aria-label="入力欄">
-      <div class="section">
-        <div class="section-title">
-          <h2>実施する技</h2>
-          <span class="section-chip">最大4つ</span>
-        </div>
-        <div class="grid">
-          <div class="field">
-            <label for="skill1">1つ目の技</label>
-            <select id="skill1">
-              <option value="0" selected>なし (0点)</option>
-              <option value="25">ロンダート (25点)</option>
-              <option value="100">バク転 (100点)</option>
-              <option value="150">バク宙 / 前宙 / 転宙 (150点)</option>
-              <option value="100">側宙 / ハンド (100点)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="skill2">2つ目の技</label>
-            <select id="skill2">
-              <option value="0" selected>なし (0点)</option>
-              <option value="25">ロンダート (25点)</option>
-              <option value="100">バク転 (100点)</option>
-              <option value="150">バク宙 / 前宙 / 転宙 (150点)</option>
-              <option value="100">側宙 / ハンド (100点)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="skill3">3つ目の技</label>
-            <select id="skill3">
-              <option value="0" selected>なし (0点)</option>
-              <option value="25">ロンダート (25点)</option>
-              <option value="100">バク転 (100点)</option>
-              <option value="150">バク宙 / 前宙 / 転宙 (150点)</option>
-              <option value="100">側宙 / ハンド (100点)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="skill4">4つ目の技</label>
-            <select id="skill4">
-              <option value="0" selected>なし (0点)</option>
-              <option value="25">ロンダート (25点)</option>
-              <option value="100">バク転 (100点)</option>
-              <option value="150">バク宙 / 前宙 / 転宙 (150点)</option>
-              <option value="100">側宙 / ハンド (100点)</option>
-            </select>
-          </div>
-        </div>
+      <div class="trow">
+        <div class="label"><span class="icon">📢</span>技の判定</div>
+        <div id="combo-status"><span class="status-chip empty">未選択</span></div>
       </div>
-
-      <div class="section">
-        <div class="section-title">
-          <h2>ひねりと評価</h2>
-          <span class="section-chip">加点項目</span>
-        </div>
-        <div class="grid">
-          <div class="field">
-            <label for="twist">ひねりの難度</label>
-            <select id="twist">
-              <option value="0" selected>なし (0点)</option>
-              <option value="100">半ひねり (100点)</option>
-              <option value="200">1回ひねり (200点)</option>
-              <option value="300">1回半ひねり (300点)</option>
-              <option value="400">2回ひねり (400点)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="landing">着地</label>
-            <select id="landing">
-              <option value="100">完全着地 (100点)</option>
-              <option value="50">1歩以上動いて着地 (50点)</option>
-              <option value="0" selected>転倒または大きく乱れた (0点)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="execution">出来栄え</label>
-            <select id="execution">
-              <option value="20">Sランク (20点)</option>
-              <option value="10">Aランク (10点)</option>
-              <option value="0" selected>Bランク (0点)</option>
-            </select>
-          </div>
-        </div>
+      <div class="trow subtotal">
+        <div class="label">🧮 ボーナス計算小計</div>
+        <div class="val" id="text-subtotal">0 点</div>
       </div>
-
-      <div class="section">
-        <div class="strategy">
-          <strong>戦略ポイント</strong>
-          技を2つ以上つなげると連続技コンボが発動し、基本点とひねり加点に1.2倍のボーナスが入ります。
-        </div>
+      <div class="trow">
+        <div class="label"><span class="icon">👟</span>着地の点数</div>
+        <div class="val" id="text-landing">0 点</div>
       </div>
-    </section>
-  </main>
+      <div class="trow">
+        <div class="label"><span class="icon">✨</span>出来栄えの点数</div>
+        <div class="val" id="text-execution">0 点</div>
+      </div>
+    </div>
+  </div>
 
-  <script>
-    const ids = ["skill1", "skill2", "skill3", "skill4", "twist", "landing", "execution"];
-    const maxVisualScore = 1000;
+  <div class="section-title"><span class="step">1</span>実施する技（最大4つまで連続可能）</div>
+  <div class="skill-grid">
+    <div class="field">
+      <label for="skill1">1つ目の技</label>
+      <div class="select-wrap">
+        <select id="skill1" onchange="calculateScore()">
+          <option value="0" selected>なし (0点)</option>
+          <option value="25">ロンダート (25点)</option>
+          <option value="100">バク転 (100点)</option>
+          <option value="150">後宙/前宙/転宙 (150点)</option>
+          <option value="100">側宙/転回 (100点)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="skill2">2つ目の技</label>
+      <div class="select-wrap">
+        <select id="skill2" onchange="calculateScore()">
+          <option value="0" selected>なし (0点)</option>
+          <option value="25">ロンダート (25点)</option>
+          <option value="100">バク転 (100点)</option>
+          <option value="150">後宙/前宙/転宙 (150点)</option>
+          <option value="100">側宙/転回 (100点)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="skill3">3つ目の技</label>
+      <div class="select-wrap">
+        <select id="skill3" onchange="calculateScore()">
+          <option value="0" selected>なし (0点)</option>
+          <option value="25">ロンダート (25点)</option>
+          <option value="100">バク転 (100点)</option>
+          <option value="150">後宙/前宙/転宙 (150点)</option>
+          <option value="100">側宙/転回 (100点)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="skill4">4つ目の技</label>
+      <div class="select-wrap">
+        <select id="skill4" onchange="calculateScore()">
+          <option value="0" selected>なし (0点)</option>
+          <option value="25">ロンダート (25点)</option>
+          <option value="100">バク転 (100点)</option>
+          <option value="150">後宙/前宙/転宙 (150点)</option>
+          <option value="100">側宙/転回 (100点)</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-    function yen(value) {
-      return `${Math.round(value)} 点`;
-    }
+  <div class="section-title"><span class="step">2</span>ひねり・着地・美しさ</div>
+  <div class="field">
+    <label for="twist">ひねりの難度</label>
+    <div class="select-wrap">
+      <select id="twist" onchange="calculateScore()">
+        <option value="0" selected>なし (0点)</option>
+        <option value="100">半ひねり (100点)</option>
+        <option value="200">1回ひねり (200点)</option>
+        <option value="300">1回半ひねり (300点)</option>
+        <option value="400">2回ひねり (400点)</option>
+      </select>
+    </div>
+  </div>
+  <div class="field">
+    <label for="landing">着地</label>
+    <div class="select-wrap">
+      <select id="landing" onchange="calculateScore()">
+        <option value="100">完璧着地 (100点)</option>
+        <option value="50">1歩以上動いて着地 (50点)</option>
+        <option value="0" selected>転倒・尻もち (0点)</option>
+      </select>
+    </div>
+  </div>
+  <div class="field">
+    <label for="execution">出来栄え（姿勢の美しさなど）</label>
+    <div class="select-wrap">
+      <select id="execution" onchange="calculateScore()">
+        <option value="20">Sランク (20点)</option>
+        <option value="10">Aランク (10点)</option>
+        <option value="0" selected>Bランク (0点)</option>
+      </select>
+    </div>
+  </div>
 
-    function calculateScore() {
-      const skills = ids.slice(0, 4).map((id) => Number(document.getElementById(id).value));
-      const twistScore = Number(document.getElementById("twist").value);
-      const landingScore = Number(document.getElementById("landing").value);
-      const executionScore = Number(document.getElementById("execution").value);
+  <div class="hint">
+    <span class="icon">💡</span>
+    <div><strong>戦略の重要ヒント：</strong>技をたくさん繋げると連続技コンボ（×1.2倍）が発動！自分の得意技をたくさん繋げて最高の構成を見つけてね。</div>
+  </div>
+</div>
 
-      const skillCount = skills.filter((score) => score > 0).length;
-      const baseTotal = skills.reduce((sum, score) => sum + score, 0);
-      const isCombo = skillCount >= 2;
-      const multiplier = isCombo ? 1.2 : 1;
-      const subtotal = (baseTotal + twistScore) * multiplier;
-      const totalScore = subtotal + landingScore + executionScore;
+<script>
+function calculateScore(){
+  const s1 = parseInt(document.getElementById('skill1').value);
+  const s2 = parseInt(document.getElementById('skill2').value);
+  const s3 = parseInt(document.getElementById('skill3').value);
+  const s4 = parseInt(document.getElementById('skill4').value);
+  const twistScore = parseInt(document.getElementById('twist').value);
+  const landingScore = parseInt(document.getElementById('landing').value);
+  const execScore = parseInt(document.getElementById('execution').value);
 
-      document.getElementById("text-base").innerText = yen(baseTotal);
-      document.getElementById("text-twist").innerText = yen(twistScore);
-      document.getElementById("text-subtotal").innerText = `${baseTotal} + ${twistScore} × ${multiplier.toFixed(1)} = ${yen(subtotal)}`;
-      document.getElementById("text-landing").innerText = yen(landingScore);
-      document.getElementById("text-execution").innerText = yen(executionScore);
-      document.getElementById("total-score").innerText = Math.round(totalScore);
-      document.getElementById("score-meter").style.width = `${Math.min(totalScore / maxVisualScore * 100, 100)}%`;
+  let skillCount = 0;
+  if (s1 > 0) skillCount++;
+  if (s2 > 0) skillCount++;
+  if (s3 > 0) skillCount++;
+  if (s4 > 0) skillCount++;
 
-      const status = document.getElementById("combo-status");
-      if (skillCount === 0) {
-        status.innerHTML = '<span class="badge badge-empty">技を選択してください</span>';
-      } else if (isCombo) {
-        status.innerHTML = `<span class="badge badge-combo">連続技コンボ ${skillCount}つ / 1.2倍</span>`;
-      } else {
-        status.innerHTML = '<span class="badge badge-single">単発技 / 1.0倍</span>';
-      }
-    }
+  const baseTotal = s1 + s2 + s3 + s4;
+  const isCombo = skillCount >= 2;
+  const multiplier = isCombo ? 1.2 : 1.0;
 
-    ids.forEach((id) => {
-      document.getElementById(id).addEventListener("change", calculateScore);
-    });
+  const subtotal = (baseTotal + twistScore) * multiplier;
+  const totalScore = subtotal + landingScore + execScore;
 
-    calculateScore();
-  </script>
+  document.getElementById('text-base').innerText = baseTotal + ' 点';
+  document.getElementById('text-twist').innerText = twistScore + ' 点';
+
+  const statusEl = document.getElementById('combo-status');
+  if (skillCount === 0){
+    statusEl.innerHTML = '<span class="status-chip empty">未選択</span>';
+  } else if (isCombo){
+    statusEl.innerHTML = `<span class="status-chip combo">連続技(${skillCount}つ) ×1.2</span>`;
+  } else {
+    statusEl.innerHTML = '<span class="status-chip single">単発技 ×1.0</span>';
+  }
+
+  document.getElementById('text-subtotal').innerText =
+    `(${baseTotal} + ${twistScore}) × ${multiplier} = ${subtotal.toFixed(0)} 点`;
+
+  document.getElementById('text-landing').innerText = landingScore + ' 点';
+  document.getElementById('text-execution').innerText = execScore + ' 点';
+
+  const totalEl = document.getElementById('total-score');
+  totalEl.innerText = totalScore.toFixed(0);
+  totalEl.classList.remove('bump');
+  void totalEl.offsetWidth;
+  totalEl.classList.add('bump');
+}
+
+calculateScore();
+</script>
+
 </body>
 </html>
